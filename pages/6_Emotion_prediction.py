@@ -46,11 +46,10 @@ stop_button = st.button("Stop")
 
 isCamera = cap.isOpened()
 
-while True:
-    if stop_button:
-        break
-
-    if isCamera:
+if isCamera:
+    while True:
+        if stop_button:
+            break
         hasFrame, frame = cap.read()
         if not hasFrame:
             print('No frames grabbed!')
@@ -79,27 +78,27 @@ while True:
         FRAME_WINDOW.image(frame, channels='BGR')
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-    else:
-        camera_st = st.camera_input(label="CAMERA")
-        if camera_st is not None:
-            frame = cv2.imdecode(np.frombuffer(camera_st.getvalue(), np.uint8), cv2.IMREAD_COLOR)
-            frame = cv2.resize(frame, (frameWidth, frameHeight))
-            gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            faces = detector.detect(frame)
-            if faces[1] is not None:
-                for idx, face in enumerate(faces[1]):
-                    coords = face[:-1].astype(np.int32)
-                    x = coords[0]
-                    y = coords[1]
-                    w = coords[2]
-                    h = coords[3]
+else:
+    camera_st = st.camera_input(label="CAMERA")
+    if camera_st is not None:
+        frame = cv2.imdecode(np.frombuffer(camera_st.getvalue(), np.uint8), cv2.IMREAD_COLOR)
+        frame = cv2.resize(frame, (frameWidth, frameHeight))
+        gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = detector.detect(frame)
+        if faces[1] is not None:
+            for idx, face in enumerate(faces[1]):
+                coords = face[:-1].astype(np.int32)
+                x = coords[0]
+                y = coords[1]
+                w = coords[2]
+                h = coords[3]
 
-                    cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                    roi_gray_frame = gray_frame[y:y + h, x:x + w]
-                    cropped_img = np.expand_dims(np.expand_dims(cv2.resize(roi_gray_frame, (48, 48)), -1), 0)
+                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                roi_gray_frame = gray_frame[y:y + h, x:x + w]
+                cropped_img = np.expand_dims(np.expand_dims(cv2.resize(roi_gray_frame, (48, 48)), -1), 0)
 
-                    emotion_prediction = emotion_model.predict(cropped_img)
-                    maxindex = int(np.argmax(emotion_prediction))
-                    cv2.putText(frame, emotion_dict[maxindex], (x+5, y-20), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2, cv2.LINE_AA)
+                emotion_prediction = emotion_model.predict(cropped_img)
+                maxindex = int(np.argmax(emotion_prediction))
+                cv2.putText(frame, emotion_dict[maxindex], (x+5, y-20), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2, cv2.LINE_AA)
 
-            FRAME_WINDOW.image(frame, channels='BGR')
+        FRAME_WINDOW.image(frame, channels='BGR')
