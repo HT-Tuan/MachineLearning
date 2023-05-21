@@ -81,6 +81,13 @@ if isCamera:
 else:
     camera_st = st.camera_input(label="CAMERA")
     if camera_st is not None:
+        frame = cv2.imdecode(np.frombuffer(camera_st.getvalue(), np.uint8), cv2.IMREAD_COLOR)
+        height, width, channels = frame.shape
+
+        frameWidth = int(width)
+        frameHeight = int(height)
+        detector.setInputSize([frameWidth, frameHeight])
+
         frame = cv2.resize(frame, (frameWidth, frameHeight))
         gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = detector.detect(frame)
