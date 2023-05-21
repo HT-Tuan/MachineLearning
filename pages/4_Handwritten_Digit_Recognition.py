@@ -15,7 +15,7 @@ st.set_page_config(
 css = """
     <style>
         .css-6qob1r {
-            background-color: #98EECC;
+            background-color: #e88102;
         }
     </style>
 """

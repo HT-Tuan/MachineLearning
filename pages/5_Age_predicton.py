@@ -3,6 +3,9 @@ import numpy as np
 import cv2 as cv
 from keras.models import model_from_json
 from tensorflow.keras.preprocessing.image import img_to_array
+import gdown
+import os
+
 
 st.set_page_config(
     page_title="Dự đoán tuổi",
@@ -12,11 +15,17 @@ st.set_page_config(
 css = """
     <style>
         .css-6qob1r {
-            background-color: #98EECC;
+            background-color: #e88102;
         }
     </style>
 """
 st.markdown(css, unsafe_allow_html=True)
+
+url = 'https://drive.google.com/uc?id=18E4OPrtv2OT6pbFX-vIToda1QqGm942u'
+output = './src/Age_Prediction/models/age_model_weights.h5'
+if not os.path.exists(output):
+    gdown.download(url, output, quiet=False)
+
 
 st.title('Dự đoán tuổi')
 FRAME_WINDOW = st.image([])
@@ -100,7 +109,7 @@ output_indexes = np.array([i for i in range(0, 101)])
 
 # Load the face detection model
 detector = cv.FaceDetectorYN.create(
-    './src/Age_Prediction/models/face_detection_yunet_2022mar.onnx',
+    './src/Face_detection/face_detection_yunet_2022mar.onnx',
     "",
     (320, 320),
     0.9,

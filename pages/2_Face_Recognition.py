@@ -12,7 +12,7 @@ st.set_page_config(
 css = """
     <style>
         .css-6qob1r {
-            background-color: #98EECC;
+            background-color: #e88102;
         }
     </style>
 """
@@ -22,7 +22,7 @@ st.title('Nhận dạng khuôn mặt')
 
 isCamera = False
 FRAME_WINDOW = st.image([])
-cap = cv.VideoCapture(10)
+cap = cv.VideoCapture(0)
 
 if(cap.isOpened()):
     isCamera = True
@@ -51,26 +51,37 @@ if isCamera == True and st.session_state.stop == True:
 
 
 svc = joblib.load('./src/Face_Recognition/svc.pkl')
-mydict = ['BanKiet', 'BanNghia', 'BanThanh', 'Dan',
-          'SangSang', 'ThanhTuan', 'ThayDuc', 'ThoTy']
+mydict = ['BanKiet', 'BanNghia', 'BanThanh', 'Dan', 'DangKhoa',
+        'HongSon', 'SangSang', 'ThanhTuan', 'ThayDuc', 'ThoTy']
 
 
 def visualize(input, faces, fps, thickness=2):
-    dem = 0
+    total = 0
+    total_detec = 0
     if faces[1] is not None:
         for idx, face in enumerate(faces[1]):
-            # print('Face {}, top-left coordinates: ({:.0f}, {:.0f}), box width: {:.0f}, box height {:.0f}, score: {:.2f}'.format(idx, face[0], face[1], face[2], face[3], face[-1]))
-
             coords = face[:-1].astype(np.int32)
 
             face_align = recognizer.alignCrop(frame, face)
             face_feature = recognizer.feature(face_align)
             test_predict = svc.predict(face_feature)
             result = mydict[test_predict[0]]
-
-            cv.putText(input, result, (coords[0], coords[1] - 10),
-                         cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-
+            # ==============================
+            img_predict = cv.imread('./src/Face_Recognition/' + result + '.bmp')
+            detector.setInputSize([img_predict.shape[1], img_predict.shape[0]])
+            face_predict = detector.detect(img_predict)
+            if face_predict[1] is not None:
+                predict_align = recognizer.alignCrop(img_predict, face_predict[1][0])
+                predict_feature = recognizer.feature(predict_align)
+                # 
+                cosine_similarity_threshold = 0.363
+                #
+                cosine_score = recognizer.match(face_feature, predict_feature, cv.FaceRecognizerSF_FR_COSINE)
+                
+                if cosine_score >= cosine_similarity_threshold:
+                    total_detec = total_detec + 1
+                    cv.putText(input, result, (coords[0], coords[1] - 10), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2)           
+            # =================================  
             cv.rectangle(input, (coords[0], coords[1]), (coords[0] +
                          coords[2], coords[1]+coords[3]), (0, 255, 0), thickness)
             
@@ -81,16 +92,22 @@ def visualize(input, faces, fps, thickness=2):
                       2, (255, 0, 255), thickness)
             cv.circle(input, (coords[12], coords[13]),
                       2, (0, 255, 255), thickness)
-            dem = dem + 1
+            total = total + 1
 
-    cv.putText(input, 'FPS: {:.2f}'.format(fps), (1, 16),
-               cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-    cv.putText(input, 'Total: {:d}'.format(dem), (1, 50), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+    cv.putText(input, 'FPS: ', (1, 16),
+               cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+    cv.putText(input, '{:.2f}'.format(fps), (50, 16), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+
+    cv.putText(input, 'Total Detection:', (1, 36), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+    cv.putText(input, '{:d}'.format(total), (130, 36), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+
+    cv.putText(input, 'Total Recognition:', (1, 56), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+    cv.putText(input, '{:d}'.format(total_detec), (145, 56), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
 
 if __name__ == '__main__':
     detector = cv.FaceDetectorYN.create(
-        './src/Face_Recognition/face_detection_yunet_2022mar.onnx',
+        './src/Face_detection/face_detection_yunet_2022mar.onnx',
         "",
         (320, 320),
         0.9,
@@ -127,7 +144,7 @@ if __name__ == '__main__':
     else:
         frameWidth = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
         frameHeight = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
-        detector.setInputSize([frameWidth, frameHeight])
+        
 
         while True:
             hasFrame, frame = cap.read()
@@ -135,6 +152,7 @@ if __name__ == '__main__':
                 print('No frames grabbed!')
                 break
 
+            detector.setInputSize([frameWidth, frameHeight])
             # Inference
             tm.start()
             faces = detector.detect(frame)  # faces is a tuple

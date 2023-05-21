@@ -10,7 +10,7 @@ st.set_page_config(
 css = """
     <style>
         .css-6qob1r {
-            background-color: #98EECC;
+            background-color: #e88102;
         }
     </style>
 """
@@ -55,7 +55,6 @@ def visualize(input, faces, fps, thickness=2):
     dem = 0
     if faces[1] is not None:
         for idx, face in enumerate(faces[1]):
-            # print('Face {}, top-left coordinates: ({:.0f}, {:.0f}), box width: {:.0f}, box height {:.0f}, score: {:.2f}'.format(idx, face[0], face[1], face[2], face[3], face[-1]))
 
             coords = face[:-1].astype(np.int32)
             cv.rectangle(input, (coords[0], coords[1]), (coords[0]+coords[2], coords[1]+coords[3]), (0, 255, 0), thickness)
@@ -65,8 +64,8 @@ def visualize(input, faces, fps, thickness=2):
             cv.circle(input, (coords[10], coords[11]), 2, (255, 0, 255), thickness)
             cv.circle(input, (coords[12], coords[13]), 2, (0, 255, 255), thickness)
             dem = dem + 1
-    cv.putText(input, 'FPS: {:.2f}'.format(fps), (1, 16), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-    cv.putText(input, 'Total: {:d}'.format(dem), (1, 50), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+    cv.putText(input, 'FPS: {:.2f}'.format(fps), (1, 16), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+    cv.putText(input, 'Total: {:d}'.format(dem), (1, 50), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
 detector = cv.FaceDetectorYN.create(
     './src/Face_detection/face_detection_yunet_2022mar.onnx',
