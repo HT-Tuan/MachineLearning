@@ -25,9 +25,9 @@ st.markdown(
     
     **Thực hiện:**
     
-    **1. Huỳnh Thanh Tuấn - 20110120**
+    **1. Huỳnh Thanh Tuấn - 20110120 - Lớp 01CLC**
     
-    **2. Trần Văn Dân - 20110451**
+    **2. Trần Văn Dân - 20110451 - Lớp 04CLC**
     
 """
 )
